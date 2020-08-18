@@ -1,0 +1,280 @@
+\documentclass[a4paper]{article}\usepackage[]{graphicx}\usepackage[]{color}
+% maxwidth is the original width if it is less than linewidth
+% otherwise use linewidth (to make sure the graphics do not exceed the margin)
+\makeatletter
+\def\maxwidth{ %
+  \ifdim\Gin@nat@width>\linewidth
+    \linewidth
+  \else
+    \Gin@nat@width
+  \fi
+}
+\makeatother
+
+\definecolor{fgcolor}{rgb}{0.345, 0.345, 0.345}
+\newcommand{\hlnum}[1]{\textcolor[rgb]{0.686,0.059,0.569}{#1}}%
+\newcommand{\hlstr}[1]{\textcolor[rgb]{0.192,0.494,0.8}{#1}}%
+\newcommand{\hlcom}[1]{\textcolor[rgb]{0.678,0.584,0.686}{\textit{#1}}}%
+\newcommand{\hlopt}[1]{\textcolor[rgb]{0,0,0}{#1}}%
+\newcommand{\hlstd}[1]{\textcolor[rgb]{0.345,0.345,0.345}{#1}}%
+\newcommand{\hlkwa}[1]{\textcolor[rgb]{0.161,0.373,0.58}{\textbf{#1}}}%
+\newcommand{\hlkwb}[1]{\textcolor[rgb]{0.69,0.353,0.396}{#1}}%
+\newcommand{\hlkwc}[1]{\textcolor[rgb]{0.333,0.667,0.333}{#1}}%
+\newcommand{\hlkwd}[1]{\textcolor[rgb]{0.737,0.353,0.396}{\textbf{#1}}}%
+\let\hlipl\hlkwb
+
+\usepackage{framed}
+\makeatletter
+\newenvironment{kframe}{%
+ \def\at@end@of@kframe{}%
+ \ifinner\ifhmode%
+  \def\at@end@of@kframe{\end{minipage}}%
+  \begin{minipage}{\columnwidth}%
+ \fi\fi%
+ \def\FrameCommand##1{\hskip\@totalleftmargin \hskip-\fboxsep
+ \colorbox{shadecolor}{##1}\hskip-\fboxsep
+     % There is no \\@totalrightmargin, so:
+     \hskip-\linewidth \hskip-\@totalleftmargin \hskip\columnwidth}%
+ \MakeFramed {\advance\hsize-\width
+   \@totalleftmargin\z@ \linewidth\hsize
+   \@setminipage}}%
+ {\par\unskip\endMakeFramed%
+ \at@end@of@kframe}
+\makeatother
+
+\definecolor{shadecolor}{rgb}{.97, .97, .97}
+\definecolor{messagecolor}{rgb}{0, 0, 0}
+\definecolor{warningcolor}{rgb}{1, 0, 1}
+\definecolor{errorcolor}{rgb}{1, 0, 0}
+\newenvironment{knitrout}{}{} % an empty environment to be redefined in TeX
+
+\usepackage{alltt}
+\usepackage{fullpage} 
+\usepackage{parskip} 
+\usepackage{amsmath}
+\usepackage{anysize}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{hyperref}
+\usepackage[spanish]{babel}  
+\usepackage[utf8x]{inputenc}   
+\usepackage[margin=2cm]{geometry}
+\usepackage{multirow}
+\usepackage{booktabs}
+\usepackage{mathtools}
+\usepackage{float}
+\usepackage{adjustbox}
+\usepackage[bottom]{footmisc}
+\usepackage{makecell}
+    \setcellgapes{5pt}
+\usepackage[labelfont=bf]{caption}
+\newcommand*{\torange}{\textcolor{BurntOrange}}
+\newcommand*{\tblue}{\textcolor{BlueGreen}}
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\begin{document}
+\setcounter{page}{1}
+
+\thispagestyle{empty}
+
+\begin{center}
+{\LARGE{\bfseries Trabajo Práctico N\textsuperscript{o}3 - Modelos de Clasificación}}\\
+\hspace
+{\large{\bfseries Aprendizaje Estadístico - FIUBA}}\\
+{\large{\bfseries 1\textsuperscript{er} Cuatrimestre - 2020}}
+\end{center}
+
+\hspace
+
+\begin{center}
+{\large{\textfont{José F. González - 100063 - \url{jfgonzalez@fi.uba.ar}}}\\
+\end{center}
+
+\begin{center}
+{\large{\textfont{Atento a: Ing. Jemina García}}} \hfill {\large{\textfont{Revisión 1.8}}}\\
+\end{center}
+
+
+\section{Introducción}
+
+
+
+Nos interesa contruir un modelo de clasificación para detectar la presencia de tumores en muestras de tejido celular. Para ello disponemos el conjunto de datos \torange{\texttt{levels}} con mediciones de los niveles de actividad de 2000 genes presentes en células de 62 tejidos distintos, donde 40 tejidos están etiquetados como tumores y 22 como normales.
+\textbf{Como criterio general buscamos un modelo con pocas variables explicativas que maximize la medida \textit{accuracy} en una validación cruzada.} 
+
+\section{Estandarización}
+
+Los niveles de actividad tienen un rango muy amplio lo que se traduce en una alta variabilidad, esto es evidente el panel izquierdo de la Figura \ref{fig:variabilidad} donde se muestran la media y el desvío estándar para los niveles de cada una de las muestras de tejido. Aplicando un logaritmo base diez a todos los datos se comprime el rango de datos y se obtiene un desvío estándar más representativo del conjunto como se ve en el panel central de la Figura \ref{fig:variabilidad}, definimos así un nuevo conjunto \torange{\texttt{logLevels}}.
+
+Los métodos de reducción de variables que utilizaremos, para enfrentar la desproporción entre cantidad de predictoras y muestras, funcionan mejor con predictores estandarizados en media cero y desvío uno, por ejemplo para no afectar las penalizaciones de los métodos de reducción. Luego resultará conveniente definir un nuevo conjunto \torange{\texttt{stdLogLevels}} en esta escala a cambio de perder un poco de interpretabilidad. En el panel derecho de la Figura \ref{fig:variabilidad} se ve el efecto de la nueva escala sobre la media y desvío de los genes de cada uno de los tejidos.
+
+\begin{figure}[h]
+\caption{Variabilidad de la media y el desvío estandar en las 62 muestras de tejido. \textbf{Izquierda:} Desvío estandar y media para las 62 muestras de tejido del conjunto \torange{\texttt{levels}}. \textbf{Centro:} Desvío estándar y media para las 62 muestras del conjunto \torange{\texttt{logLevels}} luego de tomar logaritmo en base diez a los niveles de expresión de los genes. \textbf{Derecha:} Desvío estándar y media para las muestras de \torange{\texttt{stdLogLevels}} luego de estandarizar los datos a media cero y desvío uno.}
+
+\label{fig:variabilidad}
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
+
+{\centering \includegraphics[width=\maxwidth]{figure/unnamed-chunk-2-1} 
+
+}
+
+
+
+\end{knitrout}
+\end{figure}
+
+
+\section{Reducción de variables}
+
+El mapa de calor de de la Figura \ref{fig:heatmap} muestra los logaritmos de niveles de actividad, en los distintos genes del eje vertical, como tonos rojos para genes con mayor expresión y tonos azules para genes con menor expresión. Los genes fueron agrupados en un cluster jerárquico según los patrones de su cadena de intesidad revelando estructuras similares en las expresiones de distintos genes. Esto se interpreta como procesos de regulación entre ciertos grupos de genes, lo que sugiere efectos de multicolinealidad fuertes. Analizando la matriz de correlación de \torange{\texttt{stdLogLevels}} se cuenta un $9\%$ de las correlaciones entre genes son mayor a $0.7$ y un $2\%$ son correlación mayor a $0.8$. Los casos de alta correlación son generalmente interpretados como genes con regulación directa entre ellos. 
+
+
+
+
+\begin{figure}[H]
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
+
+{\centering \includegraphics[width=\maxwidth]{figure/unnamed-chunk-4-1} 
+
+}
+
+
+
+\end{knitrout}
+
+\caption{Actividad de los distintos genes. El eje vertical corresponde a genes y el horizontal a los tejidos. Genes con mayor nivel de actividad están codificados con tonos rojos y los de menor actividad con azules. Los genes se encuentran ordenados por un \textit{clustering jerarquíco} según similitudes en la cadena de intesidades para facilitar la distinción de grupos correlacionados.}
+\label{fig:heatmap}
+\end{figure}
+
+
+\subsection{Selección por \textit{Lasso}}
+
+El primer enfoque para reducir dimensión y seleccionar variables simultaneamente es penalizar por \textit{LASSO}. En la Figura \ref{fig:lasso} se muestra el $\lambda$ que minimiza el error cuadrático medio por validación cruzada para Lasso con \torange{\texttt{nfolds=10}}, para el valor obtenido sobreviven 9 genes de los 2000 iniciales. 
+
+
+\begin{figure}[H]
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
+
+{\centering \includegraphics[width=\maxwidth]{figure/unnamed-chunk-5-1} 
+
+}
+
+
+
+\end{knitrout}
+
+\end{figure}
+
+\clearpage
+
+\subsection{Selección por Elastic Net}
+
+\textbf{Bajo efectos de colinealidad \textit{Lasso} elige arbitrariamente entre muchos posibles conjuntos colineales de predictoras omitiendo algunos genes que puedan estar relacionados con la salida}. \textit{Elastic Net} combina las penalizaciones de \textit{Ridge} y \textit{Lasso} obteniendo un método que es más inclusivo con las variables correlacionadas, por efector de la penalización \textit{Ridge}, y da mejores resultado en este tipo de datos a costa de aumentar la cantidad de genes y tener que ajustar un nuevo parámetro $\alpha$. En la Figura XX se muestran los resultados de \rextit{Elastic Net} para tres valores de $\alpha$.
+
+
+
+\begin{figure}[t]
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
+
+{\centering \includegraphics[width=\maxwidth]{figure/unnamed-chunk-6-1} 
+
+}
+
+
+
+\end{knitrout}
+
+\caption{Comparación de \textit{Lasso}, \textit{Ridge} y \textit{Elastic Net} en función de los errores de clasificación por validación cruzada de un modelo logístico construido con los coefficientes de cada método de reducción}
+\label{fig:lasso_comp}
+\end{figure}
+
+
+
+
+\section{Selección por \textit{Nearest Shrunken Centroids}}
+
+\textit{Nearest Shrunken Centroids} es un método desarrollado en el contexto de identificar clases de genes y selección automática de genes que caracterizan la clase. Es una modificación del \texit{nearest centroids} aplicando una contracción de los centroides de cada clase hacía cero, eliminando los que alcanzan el cero y clasificando sobre la nueva disposición por proximidad a los centroides que sobreviven.  
+
+En la Figura ?? se muestran los resultados del error de clasificación por validación cruzada según el parámetro de umbral $\Delta$. Como clasificador el método no es notablemente mejor que las regresiones logísticas con reducción por \textit{Lasso} y \texit{Elastic Net}, pero puede ser un buen selector de variables. Si costruimos un modelo logístico utilizando los genes elegidos por \textit{NSC} obtenemos ...
+
+\begin{figure}[b]
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
+
+{\centering \includegraphics[width=\maxwidth]{figure/unnamed-chunk-8-1} 
+
+}
+
+
+
+\end{knitrout}
+\caption{Comparación de \textit{Lasso}, \textit{Ridge} y \textit{Elastic Net} en función de los errores de clasificación por validación cruzada de un modelo logístico contruido con los coefficientes de cada método de reducción}
+\label{fig:lasso_comp}
+\end{figure}
+
+
+
+\clearpage
+\subsection{Resultados}
+
+
+\section{Clasificación}
+
+\subsection{SVM}
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+
+
+{\ttfamily\noindent\bfseries\color{errorcolor}{\#\# Error in library(e1071): there is no package called 'e1071'}}
+
+{\ttfamily\noindent\bfseries\color{errorcolor}{\#\# Error in svm(train.x, train.y, kernel = "{}linear"{}): could not find function "{}svm"{}}}
+
+{\ttfamily\noindent\bfseries\color{errorcolor}{\#\# Error in summary(svm.trained): object 'svm.trained' not found}}
+
+{\ttfamily\noindent\bfseries\color{errorcolor}{\#\# Error in svm(train.x, train.y, kernel = "{}linear"{}, cross = 10): could not find function "{}svm"{}}}
+
+{\ttfamily\noindent\bfseries\color{errorcolor}{\#\# Error in summary(svm.trained.cv): object 'svm.trained.cv' not found}}\end{kframe}
+\end{knitrout}
+
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+
+
+{\ttfamily\noindent\bfseries\color{errorcolor}{\#\# Error in library(caret): there is no package called 'caret'}}
+
+{\ttfamily\noindent\bfseries\color{errorcolor}{\#\# Error in createFolds(labels, k, list = TRUE, returnTrain = FALSE): could not find function "{}createFolds"{}}}\end{kframe}
+\end{knitrout}
+
+
+\end{figure}
+
+\clearpage
+\section{Bibliografía}
+\begin{enumerate}
+\bibitem{paper} Alon U, Barkai N, Notterman DA, Gish K, Ybarra S, Mack D, et al. Broad patterns of gene expression revealed by clustering analysis of tumor and normal colon tissues probed by oligonucleotide arrays. Proceedings of the National Academy of Sciences of the United States of America. 1999.
+\bibitem{link1}https://stats.stackexchange.com/questions/184029/what-is-elastic-net-regularization-and-how-does-it-solve-the-drawbacks-of-ridge
+\end{enumerate}
+%https://stats.stackexchange.com/questions/74013/when-would-i-choose-lasso-over-elastic-net
+%https://stats.stackexchange.com/questions/264016/why-lasso-or-elasticnet-perform-better-than-ridge-when-the-features-are-correlat
+%https://stats.stackexchange.com/questions/345343/any-disadvantages-of-elastic-net-over-lasso
+
+%https://stats.stackexchange.com/questions/298/in-linear-regression-when-is-it-appropriate-to-use-the-log-of-an-independent-va
+%https://stats.stackexchange.com/questions/18844/when-and-why-should-you-take-the-log-of-a-distribution-of-numbers
+%file:///home/jose/Downloads/LogTransform.pdf
+%https://www.researchgate.net/post/What_is_Log_transformation_and_why_do_we_do_it_in_gene_expression_analysis    !! muy buenoo
+% https://stats.stackexchange.com/questions/407563/choosing-model-for-more-predictors-than-observations
+
+%https://www.reddit.com/r/bioinformatics/comments/17my8g/plotting_microarray_data_in_r/
+%http://bioconductor.org/packages/release/bioc/html/affy.html
+%http://rstudio-pubs-static.s3.amazonaws.com/14438_729bb8430be242fba106c8ae3968458f.html
+%http://manuals.bioinformatics.ucr.edu/home/R_BioCondManual#TOC-Bioconductor
+\section{Anexo}
+
+\torange{\textit{Gene Expression}} es un proceso en que la información contenida en algún gen de una célula se dispara para generar un producto, por ejemplo una proteina. \torange{\textit{Gene Expression Level}} es una medida de esta actividad de los genes computada a partir de la concentracion de \textit{mRNA - messenger Ribonucleioc acid}, que cuando es medida puede no representar la verdadera actividad del gen pues el \textit{mRNA} puede estar siendo regulado por otros procesos.
+
+\end{document}
